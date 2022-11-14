@@ -1,0 +1,140 @@
+netwok文件，不可用
+class Inception(nn.Module):
+    def __init__(self,in_c, pool1, c3x3red, c3x3,c5x5red, c5x5 ,pool2):
+        super(Inception,self).__init__()
+        # 线路1，单3 x 3卷积层
+        self.p1_1 = nn.Conv2d(in_c, pool1, kernel_size=3)
+        # 线路2，1 x 1卷积层后接3 x 3卷积层
+        self.p2_1 = nn.Conv2d(in_c, c3x3red, kernel_size=1)
+        self.p2_2 = nn.Conv2d(c3x3red, c3x3, kernel_size=3, padding=1)
+        # 线路3，1 x 1卷积层后接5 x 5卷积层
+        self.p3_1 = nn.Conv2d(in_c, c5x5red, kernel_size=1)
+        self.p3_2 = nn.Conv2d(c5x5red, c5x5, kernel_size=5, padding=2)
+        # 线路4，dan5 x 5卷积层
+        self.p4_1 = nn.Conv2d(in_c,pool2,kernel_size=5,  padding=1)
+
+    def forward(self, x):
+        p1 = self.p1_1(x)
+        p2 = self.p2_2(self.p2_1(x))
+        p3 = self.p3_2(self.p3_1(x))
+        p4 = self.p4_1(x)
+        return torch.cat((p1, p2, p3, p4), dim=1)
+
+
+
+class f_jk(nn.Module):
+    def __init__(self,nums,size,channels):
+        super(f_jk,self).__init__()
+        self.size = size
+        self.channels = channels
+
+        self.conv1 = nn.Sequential(
+        nn.Conv2d(self.channels, 64, 3,padding=1),
+        nn.MaxPool2d(2, 2),
+        nn.ReLU()
+        )
+        self.conv2 = nn.Sequential(
+        nn.MaxPool2d(2, 2),
+        nn.Conv2d(128,256, 3,padding=1),
+        nn.ReLU()
+        )
+        self.Residual = nn.Sequential(
+        nn.Conv2d(64, 128, 1),
+        nn.MaxPool2d(2, 2),
+        nn.ReLU()
+        )
+        self.conv3 = nn.Sequential(
+       # Inception(16,32,64,16),
+        nn.MaxPool2d(2, 2),
+        nn.Conv2d(128,128, 3,padding=1),
+        nn.ReLU()
+        )
+        self.b1_1x1=nn.Sequential(
+        nn.Conv2d(64,out_channels=16,kernel_size=1,padding=1),
+        nn.BatchNorm2d(16),
+        nn.ReLU(True)
+
+        )
+
+        self.b2_3x3=nn.Sequential(
+        nn.Conv2d(64,32,kernel_size=1),
+        nn.BatchNorm2d(32),
+        nn.ReLU(True),
+        nn.Conv2d(32,32,kernel_size=3,padding=1),
+        nn.BatchNorm2d(32),
+        nn.ReLU(True),
+        )
+
+        self.b3_5x5=nn.Sequential(
+        nn.Conv2d(64,64,kernel_size=1),
+        nn.BatchNorm2d(64),
+        nn.ReLU(True),
+        nn.Conv2d(64,64,kernel_size=5,padding=2),
+        nn.BatchNorm2d(64),
+        nn.ReLU(True),
+        )
+
+        self.b4_pool=nn.Sequential(
+        nn.Conv2d(64,16,kernel_size=5,padding=2),
+        nn.BatchNorm2d(16),
+        nn.ReLU(True)
+        )
+        self.fc1 = nn.Linear(4*4*256,128)
+        self.fc2 = nn.Linear(128,nums)
+        self.f7 = nn.Softmax()
+        self.f8 = nn.Dropout2d(0.5)
+        #self.inceptiona1 = Inception(32,16,32,32,64,64,16)
+      #  self.inceptiona1 = Inception(64)
+    def forward(self,x):
+        y0 = self.conv1(x)
+        y1 = self.b1_1x1(y0)
+        y2 = self.b2_3x3(y0)
+        y3 = self.b3_5x5(y0)
+        y4 = self.b4_pool(y0)
+        y5 = torch.cat([y1, y2, y3, y4], 1)
+       # y = self.inceptiona1(y)
+        y = self.conv3(y5)
+        y = torch.add(y,self.Residual(y0))
+        y = self.conv2(y)
+        #out = self.InceptionAux()
+        y = self.fc1(y.view(y.size(0), -1))
+        y = self.f8(y)
+        return (self.f7(self.fc2(y)))
+
+
+    def calsize(self,size):
+        return pow(((size-30)//16),2)
+
+
+
+
+
+
+class InceptionAux(nn.Module):
+    def __init__(self, num_classes, **kwargs):
+        super(InceptionAux, self).__init__(**kwargs)
+        self.pool1 = nn.MaxPool2d(pool_size=2, strides=2)
+       self.conv = nn.Sequential(
+           nn.Conv2d(64, 16, 3),
+            nn.MaxPool2d(2, 2),
+           nn.ReLU()
+        )
+
+
+    def call(self, inputs, **kwargs):
+             # aux1: N x 512 x 14 x 14, aux2: N x 528 x 14 x 14
+        x = self.averagePool(inputs)
+             # aux1: N x 512 x 4 x 4, aux2: N x 528 x 4 x 4
+        x = self.conv(x)
+             # N x 128 x 4 x 4
+        x = nn.Flatten()(x)
+        x = nn.Dropout(rate=0.5)(x)
+             # N x 2048
+        x = self.fc1(x)
+        x = nn.Dropout(rate=0.5)(x)
+                 # N x 1024
+        x = self.fc2(x)
+              # N x num_classes
+        x = self.softmax(x)
+
+        return x
