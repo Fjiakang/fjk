@@ -1,245 +1,362 @@
-# Classification
+# Semi-Supervised-Learning
 
-面向单分类、多分类以及开集识别的通用分类框架
+# 目录
+- [环境配置](#环境配置)
+- [File directory description](#代码框架)
+- [补充](#补充)
+- [研究点一（sgrw）数据集说明](#数据集说明)
+- [研究点二（sgpw）数据集说明](#数据集说明)
+- [Data setting](#数据集说明)
+- [Main parameters used in our algorithms](#算法链接)
+- [命令行举例](#运行)
+	- [算法](#不同算法)
+    	- [训练](#训练)
+    	- [测试](#测试)
+	- [实际用例及公共参数注释](#实际用例及公共参数注释)
+- [研究点一命令行](#运行)
+- [研究点二命令行](#运行)
 
-<!-- PROJECT SHIELDS -->
-<!-- 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url] -->
 
-## 目录
-
-- [上手指南](#上手指南)
-  - [开发前的配置要求](#开发前的配置要求)
-  - [安装步骤](#安装步骤)
-- [文件目录说明](#文件目录说明)
-- [开发遵循规范](#开发遵循规范)
-- [使用规范](#使用规范)
-- [开发的架构](#开发的架构)
-- [部署](#部署)
-- [使用到的框架](#使用到的框架)
-- [贡献者](#贡献者)
-- [如何参与开源项目](#如何参与开源项目)
-- [版本控制](#版本控制)
-- [作者](#作者)
-<!-- - [鸣谢](#鸣谢) -->
-
-### 上手指南
-
-###### 开发前的配置要求
-
-1. python >= 3.6
-2. cuda >= 11.0
-
-###### **安装步骤**
-
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-
-```sh
-git clone https://github.com/lab542-tju/Classification.git
-```
-
-### 文件目录说明
-eg:
+## 配置环境
 
 ```
-┌── Data
-│  ├── /mnist/
-│  ├── /radar/
-│  │  ├── /MCL/
-│  │  │  ├── /train/
-│  │  │  │  │  ├── /0/
-│  │  │  │  │  ├── 1.jpg
-│  │  │  │  │  ├── 2.jpg
+* python >= 3.6
+* cuda >= 11.0 
+grad-cam = 1.2.9
+```
+
+## File directory description
+
+```
+┌── data
+│  ├── /data/
+│  │  ├── /train/
+│  │  │  ├── /cj1/
+│  │  │  ├── /cj2/
+│  │  │  │  ├── /normal_with_cam_part_scenario/
+│  │  │  │  │  ├── /gyy/
+│  │  │  │  │  │  ├── test_gyy_bag_02_0_1.jpg
+│  │  │  │  │  │  ├── test_gyy_bag_02_0_2.jpg
+│  │  │  │  │  │  └── ...
+│  │  │  │  │  ├── /jhr/
 │  │  │  │  │  └── ...
-│  │  │  │  ├── /1/
+│  │  │  │  └── /part_part_scenario_cam/
+│  │  │  └── /cj3/
+│  │  └── /test/
+│  ├── /data2/
+│  │  ├── /径向走-随机走身份识别实测数据集/
+│  │  │  ├── /all_random_constant/
+│  │  │  │  ├── /constant/
+│  │  │  │  │  ├── /gyy/
+│  │  │  │  │  │  ├── gyy_constant_01_407.jpg
+│  │  │  │  │  │  ├── gyy_constant_0._408.jpg
+│  │  │  │  │  │  └── ...
+│  │  │  │  │  ├── /jhr/
+│  │  │  │  │  └── ...
+│  │  │  │  ├── /constant_5/
+│  │  │  │  ├── ...
+│  │  │  │  ├── /random/
+│  │  │  │  ├── /random_5/
+│  │  │  │  ├── ...
+│  │  │  │  └── /test/
+│  │  │  └── ...
+│  │  ├── /全向（0°-330°）身份识别实测数据集/
+│  │  │  ├── /train/
+│  │  │  │  ├── /other/
+│  │  │  │  │  ├── /ljh/
+│  │  │  │  │  │  ├── ljh_30_walk_01_1.jpg
+│  │  │  │  │  │  ├── ljh_30_walk_01_2.jpg
+│  │  │  │  │  │  └── ...
+│  │  │  │  │  ├── /scy/
+│  │  │  │  │  └── ...
+│  │  │  │  ├── /other_1_10/
 │  │  │  │  └── ...
+│  │  │  ├── /test/
+│  │  │  │  ├── /test/
+│  │  │  │  └── /test_jiaodu/
+│  │  │  └── ...
+│  │  ├── /全向（0°-350°）身份识别实测数据集/
+│  │  │  ├── /train/
+│  │  │  │  ├── /labeled/
+│  │  │  │  │  ├── /box/
+│  │  │  │  │  ├── /crawl/
+│  │  │  │  │  └── ...
+│  │  │  │  └── /unlabeled/
 │  │  │  └── /test/
-│  │  ├── /PID/
-│  │  └── /.../
+│  │  └── ...
 │  └── ...
-├── Classification (本级目录)
+├── Semi-Supervised_Learning (本级目录)
 │  ├── README.md
+│  ├── vis_readme.txt
+│  ├── /Vis/
+│  │  ├── attentionmap.py
+│  │  ├── featuremap.py
+│  │  ├── filtermap.py
+│  │  ├── __init__.py
+│  │  ├── logger.py
+│  │  ├── loggin_save_print.py
+│  │  ├── monitor.py
+│  │  ├── netinfo.py
+│  │  ├── processed_image.py
+│  │  ├── save_embedding.py
+│  │  └── valueepochimg.py
+│  ├── /cls_dataset/
+│  │  ├── CIFAR10.py
+│  │  ├── CIFAR100.py
+│  │  ├── ImageFolder.py
+│  │  ├── leidaFolder.py
+│  │  └── MNIST.py
 │  ├── /libs/
+│  │  ├── /openset_metric/
+│  │  │  └──openset_metric.py
+│  │  ├── Augment.py
 │  │  ├── base_model_d.py
-│  │  ├── base_model_t.py
-│  │  ├── data.py
+│  │  ├── image.py
+│  │  ├── leida_image.py
+│  │  ├── pre_data.py
 │  │  ├── metric.py
 │  │  ├── opt.py
-│  │  ├── Visualizer.py
-│  │  ├── loss.py(待删除)
-│  │  ├── utils.py（待删除）
-│  ├── /one_class/
-│  │  ├── ALOCC.py
-│  │  ├── ...
+│  │  └── Visualizer.py
 │  ├── /multi_class/
-│  │  ├── kimnet.py
-│  │  ├── ...
-│  ├── /open_set/
-│  │  ├── OpenGAN.py
-│  │  ├── ...
+│  │  ├── /meanteacher/
+│  │  │  ├──model.py
+│  │  │  └──meanteacher_network.py
+│  │  ├── /adamatch/
+│  │  │  ├──model.py
+│  │  │  └──adamatch_network.py
+│  │  ├── /fixmatch/
+│  │  │  ├──model.py
+│  │  │  └──fixmatch_network.py
+│  │  ├── /pl/
+│  │  │  ├──model.py
+│  │  │  └──pl_network.py
+│  │  ├── /vat/
+│  │  │  ├──model.py
+│  │  │  └──vat_network.py
+│  │  ├── /uda/
+│  │  │  ├──model.py
+│  │  │  └──uda_network.py
+│  │  ├── /mixmatch/
+│  │  │  ├──model.py
+│  │  │  └──mixmatch_network.py
+│  │  ├── /sgrw/
+│  │  │  ├──model.py
+│  │  │  └──ours_network.py
+│  │  ├── /sgwp/
+│  │  │  ├──model.py
+│  │  │  ├──regularizer.py
+│  │  │  └──sgwp_network.py
+│  │  └── /remixmatch/
+│  │     ├──model.py
+│  │     └──remixmatch_network.py
 │  └── main.py
-└── Output
+└── output
 ```
-### 开发遵循规范 
 
-1. 所有算法均以独立文件夹保存于不同分类文件夹（one_class，multi_class，open_set）的子目录下。
 
-2. 当前算法文件夹的命名与算法类的命名一致。
-
-3. 算法文件夹中网络结构的命名格式为：算法_network。
-
-4. 算法文件夹中须包含复现文章的pdf文件，命名格式为：年份+出版物+题目。
-
-5. 算法文件夹中模型文件前两行需注明算法来源文章，及标准引用格式。
-
-### 使用规范
-
-```sh
-python main.py <one_class/multi_class/open_set> <--args1 args1_value> <--args2 args2_value>
+## 补充：
 ```
-主函数常用参数
+训练周期包含epoch eval_step total_steps，其中step与iter意义相同，且一般是通过设定iter的数目来设定训练次数。
+```
 
+## 研究点一（sgrw）数据集说明
+```
+该数据集为9人伪装数据集（在我的论文中我将该数据集称为9人身份实测数据集）。该数据集在NAS上已经整理好，data分为train和test。
+运行时，请将NAS上 “研究点一数据/data” 文件夹直接下载到算法工程文件夹中，其中data和libs、cls_dataset、Vis等同级别。
+所有的微多普勒频谱图都是有标签数据，但是在训练过程中会忽略许多数据的标签，将他们当作无标签数据看待。
+注：train中包含三个压缩文件，cj1，cj2，cj3代表不同的有标签/无标签数据的配比情况，将它们全部解压到train内，会得到3组有标/无标文件夹，共6个文件夹。test中只包含一个压缩包，开压缩即可。
+每组文件夹的调用都在算法的libs/leida_image.py中对cj==1 cj==2 cj==3进行if-else if判断来选择(这样不太好，若能改进就好了)，opt.py中设定默认的cj为2，也就是主实验。cj1对应这论文中的case(i)。cj3对应论文中的case(ii)
+终端中添加输入参数--cj 1就是利用cj 1进行实验。训练数据有三组，测试数据中只有一组。Eg.
+FixMatch算法
+python main.py --ssl_model fixmatch --cls_dataset ImageFolder --n_classes 9 --cj 1
+python main.py --ssl_model fixmatch --cls_dataset ImageFolder --n_classes 9 --cj 2
+python main.py --ssl_model fixmatch --cls_dataset ImageFolder --n_classes 9 --cj 3
+注意：.sh文件中都未添加cj的设置，也就是默认都是2，若要尝试1或3的情形，则自行复制添加即可。
+```
+## 研究点二（sgwp）数据集说明
+```
+研究点二包含三个数据集：①随机行走数据集②全向身份识别数据集③全向动作检测数据集，每个数据集都是多分类，各有六个类。三个数据集在NAS上已经整理好，data分为train和test。
+运行时，数据文件的放置同“研究点一数据集说明.docx”，也是想在哪个数据集上实验就下载哪个数据集并解压放置到对应的位置。
+所有的微多普勒频谱图都是有标签数据，但是在训练过程中会忽略许多数据的标签，将他们当作无标签数据看待。
+注：每个数据集train中包含压缩文件，将压缩文件中的文件夹或者部分文件夹解压到train内，会得到多组有标/无标文件夹。
+每个文件夹都有自己的属性名称，代表着原本的无标签数据中所占有的有标签样本的比例。例如：constant代表径向行走，random代表随机行走，那么constant_500就代表从random中每个类随机取出1/500个(占比0.2%)样本放入到constant文件夹中作为有标签样本，有标签样本数目增加了，无标签样本数目减少了，对用的无标签样本文件夹则为random_500，以此类推。
+test中直接解压缩即可。
+与研究点一不同，这里的数据集可能会很多中有标/无标的配对情况，这种情况可以在libs/leida_image.py中自行去设定对应的cj值[在if else处设置就好]， 
+
+例如(随机行走数据集，径向行走[constant]作为有标，随机行走[random]作为无标):
+elseif self.args.cj==200:
+	self.train_labeled_dataset_root=’./train/constant_200’
+	self.train_unlabeled_dataset_root=’./train/random_200’
+	self.test_dataset_root_all = ‘./test’ #对应的名称
+注：注意中英文的引号
+
+由于算法本身结构复杂，程序运行需要很长的时间。
+同样的可以缩减对应的iter次数或epoch次数进行选择性调整。
+```
+
+## Data setting
+```
+半监督学习的输入数据包括有标签数据与无标签数据，因此准备两个dataloader进行训练，并在其中设定不同的数据增强方法(随算法改变而改变)
+各个算法model.py中都添加了对数据增强的设定，包含对有标签数据和无标签数据的预处理。其涉及的参数包括
+"--labeled_aug":表示对有标签数据进行增强方式的选择，包括weak，strong，normalize，nothing
+"--un_img1_weak"：表示对无标签图像1进行增强方式的选择，若为True则是weak，否则nothing
+"--un_img2_strong"：表示对无标签图像2进行增强方式的选择，若为True则是strong，否则weak
+
+在半监督学习中存在强增强与弱增强的设定，weak弱增强则是简单的镜像、翻转的结合，而强增强则在弱增强的基础上包含额外的增强方式，比如RandAugment、CTAugment、AutoAugment、Mixup等，此库中的strong一般指RandAugment，因为该方法比较简洁且效果更佳。
+```
+## Main parameters used in our algorithms
+```
+算法链接:[Mean Teacher](https://dl.acm.org/doi/pdf/10.5555/3294771.3294885) | [FixMatch](https://arxiv.org/ftp/arxiv/papers/2001/2001.07685.pdf) | [MixMatch](https://arxiv.org/abs/1905.02249) | [Pseudo-Labeling](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.664.3543&rep=rep1&type=pdf) | [ReMixMatch](https://arxiv.org/pdf/1911.09785.pdf) | [UDA](https://arxiv.org/pdf/1904.12848.pdf) | [VAT](https://ieeexploreieee.53yu.com/abstract/document/8417973) 
+```
+## 命令行举例
+### Mean Teacher
+Code for the paper: "[Mean teachers are better role models: Weight-averaged consistency targets improve semi-supervised deep learning results](https://dl.acm.org/doi/pdf/10.5555/3294771.3294885)" by 
+Tarvainen A, Valpola H
+
+#### train model
+```bash
+python main.py --ssl_model meanteacher --weight_decay 5e-4 --lr 0.0003 --cls_dataset ImageFolder --n_classes 6 --mu 1 --total_steps 30000 --eval_step 1000 
+```
+#### test
+```bash
+python main.py --ssl_model meanteacher --cls_dataset ImageFolder --n_classes 6 --mode test 
+```
+
+### MixMatch
+This is an unofficial PyTorch implementation of [MixMatch: A Holistic Approach to Semi-Supervised Learning](https://arxiv.org/abs/1905.02249)by
+Berthelot D, Carlini N, Goodfellow I, et al.
+
+#### train model
+```bash
+python main.py --ssl_model mixmatch  --cls_dataset ImageFolder --n_classes 9 --mu 1
+```
+#### test
+```bash
+python main.py --ssl_model mixmatch --cls_dataset ImageFolder --n_classes 9 --mode test
+```
+### Pseudo-Label
+
+Code for the paper: "[Pseudo-Label: The simple and efficient semi-supervised learning method for deep neural networks](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.664.3543&rep=rep1&type=pdf)" by 
+Lee D H
+
+#### train model
+
+```bash
+python main.py --ssl_model pl --mu 1 --cls_dataset ImageFolder --n_classes 6
+```
+#### test
+```bash
+python main.py --ssl_model pl --cls_dataset ImageFolder --n_classes 6 --mode test
+```
+### VAT
+
+Code for the paper: "[Virtual adversarial training: a regularization method for supervised and semi-supervised learning](https://ieeexploreieee.53yu.com/abstract/document/8417973)" by Miyato T, Maeda S, Koyama M, et al.
+
+#### train model
+
+```bash
+python main.py --ssl_model vat --mu 1 --cls_dataset ImageFolder --n_classes 6
+```
+#### test
+```bash
+python main.py --ssl_model vat --cls_dataset ImageFolder --n_classes 6 --mode test
+```
+### specific parameter of VAT 
+这些参数代表VAT中的loss权重以及VAT中特殊的perturbation size值
 ```python
-"cls_type", type=str,default="one_class",choices=['one_class', 'multi_class', 'open_set']
-"--phase", type=str, default="train",choices=['train','test']
-"--cls_dataroot", type=str, default="../data"
-"--cls_dataset", type=str, default="out30"
-"--cls_network", type=str, default="hmm"
-"--cls_imageSize", type=int
-"--cls_imageSize2", type=int, default=-1
-"--nc", type=int, default=3
-"--cls_batchsize", type=int, default=64
-"--metric", nargs="+", default=['AUC']
-"--metric_pos_label", type=str, default = '9'
-"--metric_average", type=str
-"--outf", type=str, default='../output'
-"--control_save_end", type=int, default=0, help='save the weights on terminal(default False)'
-"--control_print", action='store_true', help='print the results on terminal(default False)'
-"--control_save", action='store_true', help='save the results to files(default False)'
-"--load_weights", action='store_true', help='load parameters(default False)'
-"--gray_image", action='store_true', help='convert image to grayscale(default False)'
-"--aug_methods", nargs='+', default=[]
+"--entmin_weight",type=float, default=0.06,help='Entropy minimization weight'
+"--vat_eps"，type=int, default=6, help='VAT perturbation size.'
 ```
 
-### 开发的架构 
+### FixMatch
 
-暂无
+Code for the paper: "[FixMatch: Simplifying Semi-Supervised Learning with Consistency and Confidence](https://arxiv.org/abs/2001.07685)" by 
+Kihyuk Sohn, David Berthelot, Chun-Liang Li, Zizhao Zhang, Nicholas Carlini, Ekin D. Cubuk, Alex Kurakin, Han Zhang, and Colin Raffel.
 
-### 部署
+#### train model
 
-暂无
+```bash
+python main.py --ssl_model fixmatch  --cls_dataset ImageFolder --n_classes 6
+```
+#### test
+```bash
+python main.py --ssl_model fixmatch --cls_dataset ImageFolder --n_classes 6 --mode test
+```
 
-### 使用到的框架
+## 研究点一 SGRW 在9人数据集上进行实验
 
-- [Anaconda](https://www.anaconda.com/products/individual)
-- [Pytorch](https://pytorch.org)
+#### train model
 
-### 贡献者
+```bash
+python main.py --ssl_model sgrw  --cls_dataset ImageFolder --n_classes 9 --ema_mask_init_ep 0 --ema_mask_end_ep 50 --ema_mask_init_w 1.0 --ema_mask_end_w 3.0
+```
+#### test
+```bash
+python main.py --ssl_model sgrw --cls_dataset ImageFolder --n_classes 9 --mode test
+```
+### specific parameter of ours 
+这些参数代表新添加的之路中的ema_mask变化的epoch与变化的范围并且在变化后在剩余的epoch中一直保持ema_mask_end_w的值
+```python
+"--ema_mask_init_ep",type=int, default=0,help='Initial changing epoch of the ema mask'
+"--ema_mask_end_ep",type=int, default=50,help='Final changing epoch of the ema mask'
+"--ema_mask_init_w",type=float, default=1.0,help='Initial weight of the ema mask'
+"--ema_mask_end_w",type=float, default=3.0,help='Final weight of the ema mask'
+```
 
-暂无
+## 研究点二 SGWP 在6人数据集上进行实验
 
-### 如何参与项目
+#### train model
 
-1. 项目克隆
-   通过加速插件使用ssh克隆到本地电脑以形成本地仓库，以classification仓库为例：
-```   
-   git clone git@git.zhlh6.cn:lab542-tju/Classification.git '指定文件夹名（可省略）'
-```   
-2. 创建feature branch：
-   每个远程仓库具有main、develop两个分支，其中main供使用，develop供修改。在每次调试时，需要在本地仓库上新建feature分支以减少在远程develop分支上的commit数量：
+```bash
+python main.py --ssl_model sgwp --cls_dataset ImageFolder --n_classes 6 
 ```
-   git checkout -b feature
+#### test
+```bash
+python main.py --ssl_model sgwp --cls_dataset ImageFolder --n_classes 6 --mode test
 ```
-3. 修改代码：
-   在修改代码后，需要先将修改提交至本地仓库的缓冲区：
-```
-   git add .
-```
-   之后将缓冲区的修改形成commit：
-```
-   git commit -m '版本名称'
-```
-4. 合并分支并删除：
-   自行测试feature分支修改无误后，切换到develop分支：
-```
-   git checkout develop
-```
-   使用拉取命令以使本地仓库的develop分支与远程仓库同步:
-```
-   git pull
-```
-   合并本地feature分支
-```
-   git merge feature
-```
-   将合并后的develop分支进行上传
-```
-   git push origin develop
-```
-   删除本地feature分支
-```
-   git branch -d feature
-```
-*5. 回退版本：*
-
-当修改出现问题时，想要回退版本，首先调用：
-```
-   git log
-```
-   找到git log中想要回退到的版本号，使用以下命令回退：
-```
-   git reset --hard '版本号'
-```
-*6. .gitignore：*
-
-   当文件夹中出现代码不需要的文件时，避免上传，在根目录下.gitignore中添加该文件路径或格式，写法如：
-```
-   ./libs/__pycache__
-   *.pyc
-```
-### 版本控制
-
-该项目使用Git进行版本管理。您可以在repository参看当前可用版本。
-
-### 作者
-
-xxx@xxxx
-
-知乎:xxxx  &ensp; qq:xxxxxx    
-
- *您也可以在贡献者名单中参看所有参与该项目的开发者。*
-
-<!-- ### 版权说明
-
-该项目签署了MIT 授权许可，详情请参阅 [LICENSE.txt](https://github.com/lab542-tju/Classification/blob/master/LICENSE.txt) -->
-
-<!-- ### 鸣谢
 
 
-- [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-- [Img Shields](https://shields.io)
-- [Choose an Open Source License](https://choosealicense.com)
-- [GitHub Pages](https://pages.github.com)
-- [Animate.css](https://daneden.github.io/animate.css)
-- [xxxxxxxxxxxxxx](https://connoratherton.com/loaders) -->
+### UDA
+Pytorch Code for the paper: "[Unsupervised Data Augmentation](https://arxiv.org/pdf/1904.12848.pdf) by
+by Xie Q, Dai Z, Hovy E, et al
 
-<!-- links -->
-<!-- [your-project-path]:lab542-tju/Classification
-[contributors-shield]: https://img.shields.io/github/contributors/lab542-tju/Classification.svg?style=flat-square
-[contributors-url]: https://github.com/lab542-tju/Classification/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/lab542-tju/Classification.svg?style=flat-square
-[forks-url]: https://github.com/lab542-tju/Classification/network/members
-[stars-shield]: https://img.shields.io/github/stars/lab542-tju/Classification.svg?style=flat-square
-[stars-url]: https://github.com/lab542-tju/Classification/stargazers
-[issues-shield]: https://img.shields.io/github/issues/lab542-tju/Classification.svg?style=flat-square
-[issues-url]: https://img.shields.io/github/issues/lab542-tju/Classification.svg
-[license-shield]: https://img.shields.io/github/license/lab542-tju/Classification.svg?style=flat-square
-[license-url]: https://github.com/lab542-tju/Classification/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/shaojintian -->
+#### train model
+```bash
+python main.py --ssl_model uda  --cls_dataset ImageFolder --n_classes 6  --mu 1 --lr 0.1
+```
+#### test
+```bash
+python main.py --ssl_model uda --cls_dataset ImageFolder --n_classes 6 --mode test
+```
+
+
+### ReMixMatch
+
+Code for the paper: "[ReMixMatch: Semi-Supervised Learning with Distribution Alignment and Augmentation Anchoring](https://arxiv.org/abs/1911.09785)" by David Berthelot, Nicholas Carlini, Ekin D. Cubuk, Alex Kurakin, Kihyuk Sohn, Han Zhang, and Colin Raffel.
+
+#### train model
+```bash
+python main.py --ssl_model remixmatch  --cls_dataset ImageFolder --n_classes 6 --mu 1
+```
+#### test
+```bash
+python main.py --ssl_model remixmatch --cls_dataset ImageFolder --n_classes 6 --mode test
+```
+### specific parameter of ReMixMatch 
+相较于MixMatch，Remixmatch中额外添加了连个损失项，所以也加入了两个独有的损失的权重。
+```python
+"--lam_us",type=float, default=0.5,help='weight of Lus'
+"--lam_rot",type=float, default=1.5,help='weight of Rotloss'
+```
+
+### AdaMatch
+将半监督学习和领域自适应相结合
+#### train model
+```bash
+python main.py --ssl_model adamatch  --cls_dataset ImageFolder --n_classes 9 --mu 5
+```
+#### test
+```bash
+python main.py --ssl_model adamatch --cls_dataset ImageFolder --n_classes 9 --mode test
+```
+
