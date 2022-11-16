@@ -18,7 +18,7 @@
     	- [测试](#测试)
 	- [研究点一命令行](#运行)
 	- [研究点二命令行](#运行)
-
+- [可视化](#运行)
 
 
 ## 配置环境
@@ -238,13 +238,13 @@ python main.py <--ssl_model model_name> --phase test <--args1 args1_value> <--ar
 --target_category None # target_category也可以是一个整数，或批处理中每个图像的不同整数列表,默认为None
 ```
 ## 专属参数设置
-### specific parameter of VAT 
+### VAT 专属参数
 这些参数代表VAT中的loss权重以及VAT中特殊的perturbation size值
 ```python
 --entmin_weight 0.06 #熵最小化权重
 --vat_eps 6 # VAT扰动大小
 ```
-### specific parameter of sgrw
+### sgrw专属参数
 这些参数代表新添加的之路中的ema_mask变化的epoch与变化的范围并且在变化后在剩余的epoch中一直保持ema_mask_end_w的值
 ```python
 --ema_mask_init_ep 0 # ema mask 的初始更改epoch
@@ -252,7 +252,7 @@ python main.py <--ssl_model model_name> --phase test <--args1 args1_value> <--ar
 --ema_mask_init_w 1 # ema mask 的初始权重
 --ema_mask_end_w 3.0 # ema mask 的初始权重
 ```
-# specific parameter of ReMixMatch 
+### ReMixMatch专属参数
 相较于MixMatch，Remixmatch中额外添加了连个损失项，所以也加入了两个独有的损失的权重。
 ```python
 --lam_us 0.5 # Lus的权重
@@ -416,4 +416,46 @@ python main.py --ssl_model sgwp --cls_dataset ImageFolder --n_classes 6
 #### test
 ```bash
 python main.py --ssl_model sgwp --cls_dataset ImageFolder --n_classes 6 --mode test
+```
+## 可视化
+
+1.装grad-cam库时，指定版本号1.2.9  
+2.attentionmap featuremap filter train最后出或者test出，且须添加测试图片于--image_path指定路径中  
+3.需添加inference输出embedding及lbl，再调用save_result_image函数出图  
+注：函数中参数参照open_set中任意网络；model_layer_list选项与各自网络结构相关，必须包含卷积层如果不知道自己网络的各层名称，可导入torchextractor库并使用print(tx.list_module_names(self.model))来打印各层的名称
+注：若要使用注意力图、特征图、卷积核图、增强后图像，需要确定输入的一张图像，请在保存vis输出的output文件夹中手动建立一个test文件夹，并放入一张测试图像；
+或者任选测试图路径请在使用lib/opt.py中确定输入图像文件路径。  
+### 监视器monitor使用：  
+注：要先打开visdom再跑程序  
+
+1.在终端对应环境导入库 
+```
+pip install visdom  
+```
+2.在终端打开visdom服务 
+```
+ python -m visdom.server  
+ ```
+3.在浏览器导航栏输入弹出的网址（部署端口号默认）   
+```
+http://localhost:8097  
+```
+4.另打开一个终端，运行程序即可（命令行需设置--control_monitor为1，且--visdom_port为8097）  
+### 可视化图像种类与外部传参对应
+
+出图								--control_save_img_type
+t-SNE图								t-SNE
+parameter（loss）-epoch的图	      	 valueepoch
+metric-epoch的图					 metricepoch
+注意力图							 attentionmap
+特征图								 featuremap
+卷积核图				 			  filter
+增强后图像							  processed
+
+监控								 --control_monitor
+是				1（运行前，另开一个终端输入visdom打开接口）
+否				0
+### 可视化命令行举例
+```
+python main.py --ssl_model sgwp --cls_dataset ImageFolder --n_classes 9 --mode test --control_save_img_type attentionmap featuremap filter valueepoch metricepoch 
 ```
