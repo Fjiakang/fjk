@@ -443,18 +443,18 @@ http://localhost:8097
 4.另打开一个终端，运行程序即可（命令行需设置--control_monitor为1，且--visdom_port为8097）  
 ### 可视化图像种类与外部传参对应
 
-出图								--control_save_img_type
-t-SNE图								t-SNE
-parameter（loss）-epoch的图	      	 valueepoch
-metric-epoch的图					 metricepoch
-注意力图							 attentionmap
-特征图								 featuremap
-卷积核图				 			  filter
-增强后图像							  processed
+出图								--control_save_img_type  
+t-SNE图								t-SNE  
+parameter（loss）-epoch的图	      	 valueepoch  
+metric-epoch的图					 metricepoch  
+注意力图							 attentionmap  
+特征图								 featuremap  
+卷积核图				 			  filter  
+增强后图像							  processed  
 
-监控								 --control_monitor
-是				1（运行前，另开一个终端输入visdom打开接口）
-否				0
+监控								 --control_monitor  
+是				1（运行前，另开一个终端输入visdom打开接口）  
+否				0  
 ### 可视化命令行举例
 ```
 python main.py --ssl_model sgwp --cls_dataset ImageFolder --n_classes 9 --mode test --control_save_img_type attentionmap featuremap filter valueepoch metricepoch 
